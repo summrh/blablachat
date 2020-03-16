@@ -4,12 +4,14 @@ RUN set -x \
     apk add --no-cache expect && \
     apk add coreutils python make git
 
-COPY package.json temp/package.json
-COPY public temp/public
-COPY src temp/src
-COPY views temp/views
+WORKDIR /temp
 
-RUN cd temp && npm install --only=prod --unsafe-perm=true --loglevel=error
+COPY package.json package.json
+COPY public public
+COPY src src
+COPY views views
+
+RUN npm install --only=prod --unsafe-perm=true --loglevel=error
 
 FROM node:12-alpine
 

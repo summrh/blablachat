@@ -1,5 +1,6 @@
 const cluster = require('cluster');
 const express = require('express');
+const os = require('os');
 const net = require('net');
 const io = require('./io');
 
@@ -7,14 +8,15 @@ const index = require('./controllers');
 const users = require('./controllers/users');
 const login = require('./controllers/login');
 const mongodb = require('./mongodb');
-const logger = require('./logger');
+const logger = require('./logger/console');
 const config = require('./config');
 const mdw = require('./mdw');
 
 function setupCluster() {
     // Set cluster processes corresponding to logical CPUs number
-    const procNum = require('os').cpus().length;
+    const procNum = os.cpus().length;
     const workers = [];
+    const log = console;
 
     // Helper for spawning worker at index i
     const spawn = i => {
@@ -23,12 +25,12 @@ function setupCluster() {
         // Restart worker on exit
         // eslint-disable-next-line no-unused-vars
         workers[i].on('exit', (worker, code, signal) => {
-            console.log('Respawning worker', i);
+            log.log('Respawning worker', i);
             spawn(i);
         });
     };
 
-    for (let i = 0; i < procNum; i++) {
+    for (let i = 0; i < procNum; i += 1) {
         spawn(i);
     }
 
@@ -38,7 +40,7 @@ function setupCluster() {
     // and semicolons, then compressing it to the number of slots we have.
     const workerIndex = (ip, slotsNum) => {
         let digits = '';
-        for (let i = 0, len = ip.length; i < len; i++) {
+        for (let i = 0, len = ip.length; i < len; i += 1) {
             const digit = Number(ip[i]);
 
             if (!Number.isNaN(digit)) {
@@ -103,7 +105,7 @@ if (cluster.isMaster) {
     // Run worker server
     app.server = app.listen(0, () => {
         app.db = mongodb.connect(config.mongodb.url, app);
-        app.logger = logger(config.logger);
+        app.logger = logger.create(config.logger);
         app.server.keepAliveTimeout = 0;
 
         app.logger.info({ message: 'Worker server is running' }, 'server.started');

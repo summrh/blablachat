@@ -1,8 +1,9 @@
+const nodemailer = require('nodemailer');
 const { Router } = require('express');
 
 const User = require('../models/user');
+const { ServerError } = require('../errors');
 const mdw = require('../mdw');
-const nodemailer = require('nodemailer');
 
 /**
  * Send password to the new user
@@ -29,7 +30,7 @@ async function sendPasswordMail(recipient, password, config) {
         html: `Hi there!<br><br><b>Your password:</b> ${password}`,
     });
 
-    console.log('Password emailed. Message id: %s', result.messageId);
+    return result;
 }
 
 
@@ -56,8 +57,8 @@ module.exports = (config) => {
 
                 res.status(200).json({ users });
             } catch (err) {
-                if (!(err instanceof Error)) {
-                    err = new Error(`Getting users was failed (${err})`);
+                if (!(err instanceof ServerError)) {
+                    err = new ServerError(`Getting users was failed (${err.message})`, 500);
                 }
 
                 err.event = 'users.get.failed';
@@ -71,8 +72,7 @@ module.exports = (config) => {
                 const { name, email, regions } = req.body;
 
                 if (await User.findByEmail(email, true)) {
-                    const err = new Error(`User with email '${email}' already exists`);
-                    err.status = 400;
+                    const err = new ServerError(`User with email '${email}' already exists`, 400);
                     throw err;
                 }
 
@@ -97,10 +97,12 @@ module.exports = (config) => {
 
                 res.status(200).json({ message });
 
-                await sendPasswordMail(email, password, config);
+                const result = await sendPasswordMail(email, password, config);
+
+                req.app.logger('Password emailed. Message id: %s', result.messageId);
             } catch (err) {
-                if (!(err instanceof Error)) {
-                    err = new Error(`User registration was failed (${err})`);
+                if (!(err instanceof ServerError)) {
+                    err = new ServerError(`User registration was failed (${err})`, err.status || 500);
                 }
 
                 err.event = 'user.create.failed';
@@ -114,8 +116,8 @@ module.exports = (config) => {
                 let user = await User.findByEmail(req.body.email);
 
                 if (!user) {
-                    const err = new Error(`User with email '${req.body.email}' wasn't found`);
-                    err.status = 400;
+                    const err = new ServerError(
+                        `User with email '${req.body.email}' wasn't found`, 404);
                     throw err;
                 }
 
@@ -125,11 +127,11 @@ module.exports = (config) => {
 
                 res.status(200).json({ user });
             } catch (err) {
-                if (!(err instanceof Error)) {
-                    err = new Error(`Saving user was failed (${err})`);
+                if (!(err instanceof ServerError)) {
+                    err = new ServerError(
+                        `Saving user was failed (${err})`, 500, 'users.put.failed');
                 }
 
-                err.event = 'users.put.failed';
                 next(err);
             }
         });
@@ -146,11 +148,11 @@ module.exports = (config) => {
                     report,
                 });
             } catch (err) {
-                if (!(err instanceof Error)) {
-                    err = new Error(`Deleting user was failed (${err})`);
+                if (!(err instanceof ServerError)) {
+                    err = new ServerError(
+                        `Deleting user was failed (${err})`, 500, 'users.delete.failed');
                 }
 
-                err.event = 'users.delete.failed';
                 next(err);
             }
         });

@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const { ServerError } = require('../errors');
 
 /**
  * Authenticate user
@@ -18,11 +19,17 @@ module.exports = (config) => async (req, res, next) => {
         delete req.body.password;
 
         const user = await User.findByEmail(email);
-        const isLoggedIn = Boolean(user && await User.passwordCheck(password, user.password));
+
+        if (!user) {
+            const err = new ServerError(
+                `User with email '${req.body.email}' wasn't found`, 404);
+            throw err;
+        }
+
+        const isLoggedIn = await User.passwordCheck(password, user.password);
 
         if (!isLoggedIn) {
-            const err = new Error('Incorrect email or password');
-            err.status = 401;
+            const err = new ServerError('Incorrect email or password', 401);
             throw err;
         }
 
@@ -43,11 +50,11 @@ module.exports = (config) => async (req, res, next) => {
             message,
         });
     } catch (err) {
-        if (!(err instanceof Error)) {
-            err = new Error(`User sign in was failed (${err})`);
+        if (!(err instanceof ServerError)) {
+            err = new ServerError(
+                `User sign in was failed (${err.message})`, 500, 'auth.login.failed');
         }
 
-        err.event = 'auth.login.failed';
         next(err);
     }
 };
