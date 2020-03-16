@@ -1,0 +1,16 @@
+# mac
+.DS_Store
+
+# windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN
+
+# ide
+.vscode
+.idea
+
+# nodejs app
+node_modules/
+npm-debug*
+.env

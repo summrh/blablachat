@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "description": "User entity",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "User name",
+      "type": "string",
+      "minLength": 1
+    },
+    "email": {
+      "description": "User email",
+      "type": "string",
+      "pattern": "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}$",
+      "minLength": 5
+    },
+    "password": {
+      "description": "User password",
+      "type": "string",
+      "minLength": 8
+    },
+    "created_at": {
+      "description": "Creation date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The date of the last update",
+      "type": "string",
+      "format": "date-time"
+    },
+    "deleted_at": {
+      "description": "Deletion date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "role": {
+      "description": "User role",
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ],
+      "default": "user"
+    }
+  },
+  "required": [
+    "email",
+    "name",
+    "password",
+    "created_at",
+    "role"
+  ]
+}

@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+
+  rabbitmq:
+    image: rabbitmq:3.8-alpine
+    # Activate rabbitmq_recent_history_exchange plugin, allow remote guest connection and then run rabbitmq server itself
+    command: sh -c "rabbitmq-plugins enable rabbitmq_recent_history_exchange; echo loopback_users = none > /etc/rabbitmq/rabbitmq.conf; rabbitmq-server"
+    ports:
+      - 5672:5672
+
+  mongodb:
+#    image: mongo:4.2
+    image: mvertes/alpine-mongo
+    ports:
+      - 27017:27017
+
+  web:
+    env_file:
+      - .env
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017/chat
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - NODE_ENV=testlocal
+    build:
+      context: .
+    depends_on:
+      - rabbitmq
+      - mongodb
+    ports:
+      - 3000:3000
