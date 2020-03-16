@@ -81,7 +81,7 @@ module.exports = (config) => {
                 const password = Math.random().toString(10 + 26).substring(2);
 
                 // An account with admin role is created for mailer email only
-                const role = (email === config.mailer.email) ? 'admin' : 'user';
+                const role = (email === config.mailer.user) ? 'admin' : 'user';
                 const user = new User({ email, name, password, role, regions });
 
                 const validationError = user.validateSync();
