@@ -66,6 +66,7 @@ if (cluster.isMaster) {
     setupCluster();
 } else {
     const app = express();
+    app.logger = logger.create(config.logger);
     app.set('view engine', 'ejs');
     app.set('views', './views');
 
@@ -89,7 +90,7 @@ if (cluster.isMaster) {
 
     // Error handler middleware with 4 params
     app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
-        (app.logger || console).error({
+        req.app.logger.error({
             method: req.method.toLowerCase(),
             path: req.path,
             query: Object.keys(req.query).length ? req.query : undefined,
@@ -105,7 +106,6 @@ if (cluster.isMaster) {
     // Run worker server
     app.server = app.listen(0, () => {
         app.db = mongodb.connect(config.mongodb.url, app);
-        app.logger = logger.create(config.logger);
         app.server.keepAliveTimeout = 0;
 
         app.logger.info({ message: 'Worker server is running' }, 'server.started');

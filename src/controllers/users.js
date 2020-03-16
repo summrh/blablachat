@@ -99,7 +99,7 @@ module.exports = (config) => {
 
                 const result = await sendPasswordMail(email, password, config);
 
-                req.app.logger('Password emailed. Message id: %s', result.messageId);
+                req.app.logger.info('Password emailed. Message id: %s', result.messageId);
             } catch (err) {
                 if (!(err instanceof ServerError)) {
                     err = new ServerError(`User registration was failed (${err})`, err.status || 500);
