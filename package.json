@@ -30,7 +30,7 @@
     "dotenv": "8.2.0",
     "ejs": "^3.0.1",
     "express": "4.17.1",
-    "express-jwt": "5.3.1",
+    "express-jwt": "6.0.0",
     "json-schema-to-mongoose": "0.2.2",
     "moment": "2.24.0",
     "mongoose": "^5.7.7",
