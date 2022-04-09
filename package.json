@@ -32,7 +32,7 @@
     "express": "4.17.1",
     "express-jwt": "5.3.1",
     "json-schema-to-mongoose": "0.2.2",
-    "moment": "2.24.0",
+    "moment": "2.29.2",
     "mongoose": "^5.7.7",
     "mongoosejs-soft-delete": "^1.0.2",
     "nodemailer": "^6.4.3",
